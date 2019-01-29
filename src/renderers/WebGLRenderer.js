@@ -709,6 +709,12 @@ function WebGLRenderer( parameters ) {
 
 	};
 
+	var boundBufferCache = []
+	for(var i = 0; i < 64; i++) {
+		boundBufferCache[i] = null
+	}
+	var boundIndexBuffer = null;
+
 	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
 
 		var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
@@ -767,9 +773,10 @@ function WebGLRenderer( parameters ) {
 
 			setupVertexAttributes( material, program, geometry );
 
-			if ( index !== null ) {
+			if ( index !== null && boundIndexBuffer !== attribute.buffer) {
 
 				_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
+				boundIndexBuffer = attribute.buffer;
 
 			}
 
@@ -946,8 +953,11 @@ function WebGLRenderer( parameters ) {
 
 						}
 
-						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
+						if(boundBufferCache[programAttribute] !== buffer) {
+							_gl.bindBuffer( 34962, buffer );
+							_gl.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
+							boundBufferCache[programAttribute] = buffer;
+						}
 
 					} else {
 
@@ -967,8 +977,11 @@ function WebGLRenderer( parameters ) {
 
 						}
 
-						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
+						if(boundBufferCache[programAttribute] !== buffer) {
+							_gl.bindBuffer( 34962, buffer );
+							_gl.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
+							boundBufferCache[programAttribute] = buffer;
+						}
 
 					}
 
