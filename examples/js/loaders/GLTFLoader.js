@@ -8,12 +8,13 @@
 
 THREE.GLTFLoader = ( function () {
 
-	function GLTFLoader( manager ) {
+	function GLTFLoader( manager, textureLoader, leaveFormatAlone ) {
 
 		this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 		this.dracoLoader = null;
 		this.ddsLoader = null;
-
+		this.textureLoader = textureLoader;
+		this.leaveFormatAlone = leaveFormatAlone;
 	}
 
 	GLTFLoader.prototype = {
@@ -21,6 +22,10 @@ THREE.GLTFLoader = ( function () {
 		constructor: GLTFLoader,
 
 		crossOrigin: 'anonymous',
+
+		textureLoader: null,
+
+		leaveFormatAlone: false,
 
 		load: function ( url, onLoad, onProgress, onError ) {
 
@@ -228,7 +233,9 @@ THREE.GLTFLoader = ( function () {
 
 				path: path || this.resourcePath || '',
 				crossOrigin: this.crossOrigin,
-				manager: this.manager
+				manager: this.manager,
+				textureLoader: this.textureLoader,
+				leaveFormatAlone: this.leaveFormatAlone
 
 			} );
 
@@ -1540,8 +1547,13 @@ THREE.GLTFLoader = ( function () {
 		// BufferGeometry caching
 		this.primitiveCache = {};
 
-		this.textureLoader = new THREE.TextureLoader( this.options.manager );
+		if(options.textureLoader) {
+			this.textureLoader = options.textureLoader;
+		} else {
+			this.textureLoader = new THREE.TextureLoader( this.options.manager );
+		}
 		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+		this.leaveFormatAlone = options.leaveFormatAlone;
 
 		this.fileLoader = new THREE.FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );
@@ -1958,6 +1970,7 @@ THREE.GLTFLoader = ( function () {
 		var json = this.json;
 		var options = this.options;
 		var textureLoader = this.textureLoader;
+		var leaveFormatAlone = this.leaveFormatAlone;
 
 		var URL = window.URL || window.webkitURL;
 
@@ -2030,7 +2043,7 @@ THREE.GLTFLoader = ( function () {
 			if ( textureDef.name !== undefined ) texture.name = textureDef.name;
 
 			// Ignore unknown mime types, like DDS files.
-			if ( source.mimeType in MIME_TYPE_FORMATS ) {
+			if (!leaveFormatAlone && source.mimeType in MIME_TYPE_FORMATS ) {
 
 				texture.format = MIME_TYPE_FORMATS[ source.mimeType ];
 
