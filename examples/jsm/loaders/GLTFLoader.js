@@ -73,11 +73,12 @@ import {
 
 var GLTFLoader = ( function () {
 
-	function GLTFLoader( manager ) {
+	function GLTFLoader( manager, textureLoader ) {
 
 		this.manager = ( manager !== undefined ) ? manager : DefaultLoadingManager;
 		this.dracoLoader = null;
 		this.ddsLoader = null;
+		this.textureLoader = textureLoader
 
 	}
 
@@ -86,6 +87,8 @@ var GLTFLoader = ( function () {
 		constructor: GLTFLoader,
 
 		crossOrigin: 'anonymous',
+
+		textureLoader: null,
 
 		load: function ( url, onLoad, onProgress, onError ) {
 
@@ -293,7 +296,8 @@ var GLTFLoader = ( function () {
 
 				path: path || this.resourcePath || '',
 				crossOrigin: this.crossOrigin,
-				manager: this.manager
+				manager: this.manager,
+				textureLoader: this.textureLoader
 
 			} );
 
@@ -1605,8 +1609,12 @@ var GLTFLoader = ( function () {
 		// BufferGeometry caching
 		this.primitiveCache = {};
 
-		this.textureLoader = new TextureLoader( this.options.manager );
-		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+		if(options.textureLoader) {
+			this.textureLoader = options.textureLoader;
+		} else {
+			this.textureLoader = new THREE.TextureLoader( this.options.manager );
+			this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+		}
 
 		this.fileLoader = new FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );
