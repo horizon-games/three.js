@@ -8,11 +8,12 @@
 
 THREE.GLTFLoader = ( function () {
 
-	function GLTFLoader( manager ) {
+	function GLTFLoader( manager, textureLoader ) {
 
 		this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 		this.dracoLoader = null;
 		this.ddsLoader = null;
+		this.textureLoader = textureLoader;
 
 	}
 
@@ -21,6 +22,8 @@ THREE.GLTFLoader = ( function () {
 		constructor: GLTFLoader,
 
 		crossOrigin: 'anonymous',
+
+		textureLoader: null,
 
 		load: function ( url, onLoad, onProgress, onError ) {
 
@@ -228,7 +231,8 @@ THREE.GLTFLoader = ( function () {
 
 				path: path || this.resourcePath || '',
 				crossOrigin: this.crossOrigin,
-				manager: this.manager
+				manager: this.manager,
+				textureLoader: this.textureLoader
 
 			} );
 
@@ -1540,8 +1544,12 @@ THREE.GLTFLoader = ( function () {
 		// BufferGeometry caching
 		this.primitiveCache = {};
 
-		this.textureLoader = new THREE.TextureLoader( this.options.manager );
-		this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+		if(options.textureLoader) {
+			this.textureLoader = options.textureLoader;
+		} else {
+			this.textureLoader = new THREE.TextureLoader( this.options.manager );
+			this.textureLoader.setCrossOrigin( this.options.crossOrigin );
+		}
 
 		this.fileLoader = new THREE.FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );

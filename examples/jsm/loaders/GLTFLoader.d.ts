@@ -17,7 +17,7 @@ export interface GLTF {
 }
 
 export class GLTFLoader {
-  constructor(manager?: LoadingManager);
+  constructor(manager?: LoadingManager, textureLoader:TextureLoader?);
   manager: LoadingManager;
   dracoLoader: DRACOLoader | null;
   ddsLoader: DDSLoader | null;
