@@ -89,6 +89,12 @@ class Object3D extends EventDispatcher {
 			},
 			normalMatrix: {
 				value: new Matrix3()
+			},
+			modelNormalMatrix: {
+				value: new Matrix3()
+			},
+			inverseModelMatrix: {
+				value: new Matrix4()
 			}
 		} );
 

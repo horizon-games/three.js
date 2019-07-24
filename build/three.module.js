@@ -6682,6 +6682,12 @@ class Object3D extends EventDispatcher {
 			},
 			normalMatrix: {
 				value: new Matrix3()
+			},
+			modelNormalMatrix: {
+				value: new Matrix3()
+			},
+			inverseModelMatrix: {
+				value: new Matrix4()
 			}
 		} );
 
@@ -7881,6 +7887,10 @@ class Material extends EventDispatcher {
 		this.version = 0;
 
 		this._alphaTest = 0;
+
+		this.needsModelNormalMatrix = false;
+
+		this.needsInverseModelMatrix = false;
 
 	}
 
@@ -26411,6 +26421,18 @@ function WebGLRenderer( parameters = {} ) {
 		object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
 		object.normalMatrix.getNormalMatrix( object.modelViewMatrix );
 
+		if ( material.needsModelNormalMatrix ) {
+
+			object.modelNormalMatrix.getNormalMatrix( object.matrixWorld );
+
+		}
+
+		if ( material.needsInverseModelMatrix ) {
+
+			object.inverseModelMatrix.copy( object.matrixWorld ).invert();
+
+		}
+
 		material.onBeforeRender( _this, scene, camera, geometry, object, group );
 
 		if ( object.isImmediateRenderObject ) {
@@ -26887,6 +26909,20 @@ function WebGLRenderer( parameters = {} ) {
 		p_uniforms.setValue( _gl, 'modelViewMatrix', object.modelViewMatrix );
 		p_uniforms.setValue( _gl, 'normalMatrix', object.normalMatrix );
 		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
+
+		if ( material.needsModelNormalMatrix ) {
+
+			p_uniforms.setValue( _gl, 'modelNormalMatrix', object.modelNormalMatrix );
+
+		}
+
+		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
+
+		if ( material.needsInverseModelMatrix ) {
+
+			p_uniforms.setValue( _gl, 'inverseModelMatrix', object.inverseModelMatrix );
+
+		}
 
 		return program;
 

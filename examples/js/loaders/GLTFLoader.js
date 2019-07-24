@@ -1,13 +1,21 @@
 ( function () {
 
+	function passThroughResolver( str ) {
+
+		return str;
+
+	}
+
 	class GLTFLoader extends THREE.Loader {
 
-		constructor( manager ) {
+		constructor( manager, textureLoader, urlResolver ) {
 
 			super( manager );
 			this.dracoLoader = null;
 			this.ktx2Loader = null;
 			this.meshoptDecoder = null;
+			this.textureLoader = textureLoader || null;
+			this.urlResolver = urlResolver || passThroughResolver;
 			this.pluginCallbacks = [];
 			this.register( function ( parser ) {
 
@@ -103,7 +111,7 @@
 			loader.setResponseType( 'arraybuffer' );
 			loader.setRequestHeader( this.requestHeader );
 			loader.setWithCredentials( this.withCredentials );
-			loader.load( url, function ( data ) {
+			loader.load( this.urlResolver( url ), function ( data ) {
 
 				try {
 
@@ -227,7 +235,9 @@
 				requestHeader: this.requestHeader,
 				manager: this.manager,
 				ktx2Loader: this.ktx2Loader,
-				meshoptDecoder: this.meshoptDecoder
+				meshoptDecoder: this.meshoptDecoder,
+				textureLoader: this.textureLoader,
+				urlResolver: this.urlResolver
 			} );
 			parser.fileLoader.setRequestHeader( this.requestHeader );
 
@@ -1942,7 +1952,11 @@
 			this.nodeNamesUsed = {}; // Use an THREE.ImageBitmapLoader if imageBitmaps are supported. Moves much of the
 			// expensive work of uploading a texture to the GPU off the main thread.
 
-			if ( typeof createImageBitmap !== 'undefined' && /Firefox/.test( navigator.userAgent ) === false ) {
+			if ( options.textureLoader ) {
+
+				this.textureLoader = options.textureLoader;
+
+			} else if ( typeof createImageBitmap !== 'undefined' && /Firefox/.test( navigator.userAgent ) === false ) {
 
 				this.textureLoader = new THREE.ImageBitmapLoader( this.options.manager );
 
@@ -1956,6 +1970,7 @@
 			this.textureLoader.setRequestHeader( this.options.requestHeader );
 			this.fileLoader = new THREE.FileLoader( this.options.manager );
 			this.fileLoader.setResponseType( 'arraybuffer' );
+			this.urlResolver = options.urlResolver;
 
 			if ( this.options.crossOrigin === 'use-credentials' ) {
 
@@ -2310,9 +2325,10 @@
 			}
 
 			const options = this.options;
+			const urlResolver = this.urlResolver;
 			return new Promise( function ( resolve, reject ) {
 
-				loader.load( resolveURL( bufferDef.uri, options.path ), resolve, undefined, function () {
+				loader.load( urlResolver( resolveURL( bufferDef.uri, options.path ) ), resolve, undefined, function () {
 
 					reject( new Error( 'THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".' ) );
 

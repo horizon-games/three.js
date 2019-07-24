@@ -76,6 +76,10 @@ class Material extends EventDispatcher {
 
 		this._alphaTest = 0;
 
+		this.needsModelNormalMatrix = false;
+
+		this.needsInverseModelMatrix = false;
+
 	}
 
 	get alphaTest() {
