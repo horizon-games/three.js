@@ -199,6 +199,7 @@ export class WebGLRenderer implements Renderer {
 	getContext(): WebGLRenderingContext;
 	getContextAttributes(): any;
 	forceContextLoss(): void;
+	forceContextRestore(): void;
 
 	/**
 	 * @deprecated Use {@link WebGLCapabilities#getMaxAnisotropy .capabilities.getMaxAnisotropy()} instead.
