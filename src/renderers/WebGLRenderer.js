@@ -741,12 +741,10 @@ function WebGLRenderer( parameters ) {
 		//
 
 		var index = geometry.index;
-		var position = geometry.attributes.position;
 
 		//
 
 		if ( index !== null && index.count === 0 ) return;
-		if ( position === undefined || position.count === 0 ) return;
 
 		//
 
@@ -790,10 +788,6 @@ function WebGLRenderer( parameters ) {
 		if ( index !== null ) {
 
 			dataCount = index.count;
-
-		} else if ( position !== undefined ) {
-
-			dataCount = position.count;
 
 		}
 
