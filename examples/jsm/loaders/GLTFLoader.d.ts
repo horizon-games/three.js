@@ -29,7 +29,7 @@ export interface GLTF {
 
 export class GLTFLoader extends Loader {
 
-	constructor( manager?: LoadingManager, textureLoader?: TextureLoader, leaveFormatAlone?: boolean );
+	constructor( manager?: LoadingManager, textureLoader?: TextureLoader, leaveFormatAlone?: boolean, urlResolver?: ( url:string ) => string );
 	dracoLoader: DRACOLoader | null;
 	ddsLoader: DDSLoader | null;
 
