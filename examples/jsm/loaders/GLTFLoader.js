@@ -70,9 +70,14 @@ import {
 	sRGBEncoding
 } from "../../../build/three.module.js";
 
+
+function passThroughResolver(str) {
+	return str;
+}
+
 var GLTFLoader = ( function () {
 
-	function GLTFLoader( manager, textureLoader, leaveFormatAlone) {
+	function GLTFLoader( manager, textureLoader, leaveFormatAlone, urlResolver ) {
 
 		Loader.call( this, manager );
 
@@ -80,6 +85,7 @@ var GLTFLoader = ( function () {
 		this.ddsLoader = null;
 		this.textureLoader = textureLoader
 		this.leaveFormatAlone = leaveFormatAlone
+		this.urlResolver = urlResolver || passThroughResolver
 	}
 
 	GLTFLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
@@ -143,7 +149,7 @@ var GLTFLoader = ( function () {
 
 			}
 
-			loader.load( url, function ( data ) {
+			loader.load( this.urlResolver(url), function ( data ) {
 
 				try {
 
@@ -277,7 +283,8 @@ var GLTFLoader = ( function () {
 				crossOrigin: this.crossOrigin,
 				manager: this.manager,
 				textureLoader: this.textureLoader,
-				leaveFormatAlone: this.leaveFormatAlone
+				leaveFormatAlone: this.leaveFormatAlone,
+				urlResolver: this.urlResolver
 
 			} );
 
@@ -1604,6 +1611,8 @@ var GLTFLoader = ( function () {
 
 		this.leaveFormatAlone = options.leaveFormatAlone;
 
+		this.urlResolver = options.urlResolver;
+
 		this.fileLoader = new FileLoader( this.options.manager );
 		this.fileLoader.setResponseType( 'arraybuffer' );
 
@@ -1846,10 +1855,11 @@ var GLTFLoader = ( function () {
 		}
 
 		var options = this.options;
+		var urlResolver = this.urlResolver;
 
 		return new Promise( function ( resolve, reject ) {
 
-			loader.load( resolveURL( bufferDef.uri, options.path ), resolve, undefined, function () {
+			loader.load( urlResolver(resolveURL( bufferDef.uri, options.path )), resolve, undefined, function () {
 
 				reject( new Error( 'THREE.GLTFLoader: Failed to load buffer "' + bufferDef.uri + '".' ) );
 
