@@ -1,577 +1,591 @@
 /**
- * @author takahirox / http://github.com/takahirox/
- *
- * Reference: https://en.wikipedia.org/wiki/Cel_shading
- *
- * API
- *
- * 1. Traditional
- *
- * var effect = new THREE.OutlineEffect( renderer );
- *
- * function render() {
- *
- * 	effect.render( scene, camera );
- *
- * }
- *
- * 2. VR compatible
- *
- * var effect = new THREE.OutlineEffect( renderer );
- * var renderingOutline = false;
- *
- * scene.onAfterRender = function () {
- *
- * 	if ( renderingOutline ) return;
- *
- * 	renderingOutline = true;
- *
- * 	effect.renderOutline( scene, camera );
- *
- * 	renderingOutline = false;
- *
- * };
- *
- * function render() {
- *
- * 	renderer.render( scene, camera );
- *
- * }
- *
- * // How to set default outline parameters
- * new THREE.OutlineEffect( renderer, {
- * 	defaultThickness: 0.01,
- * 	defaultColor: [ 0, 0, 0 ],
- * 	defaultAlpha: 0.8,
- * 	defaultKeepAlive: true // keeps outline material in cache even if material is removed from scene
- * } );
- *
- * // How to set outline parameters for each material
- * material.userData.outlineParameters = {
- * 	thickness: 0.01,
- * 	color: [ 0, 0, 0 ]
- * 	alpha: 0.8,
- * 	visible: true,
- * 	keepAlive: true
- * };
- *
- * TODO
- *  - support shader material without objectNormal in its vertexShader
+ * Generated from 'examples/jsm/effects/OutlineEffect.js'
  */
 
-THREE.OutlineEffect = function ( renderer, parameters ) {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	parameters = parameters || {};
+	/**
+	 * @author takahirox / http://github.com/takahirox/
+	 *
+	 * Reference: https://en.wikipedia.org/wiki/Cel_shading
+	 *
+	 * API
+	 *
+	 * 1. Traditional
+	 *
+	 * var effect = new OutlineEffect( renderer );
+	 *
+	 * function render() {
+	 *
+	 * 	effect.render( scene, camera );
+	 *
+	 * }
+	 *
+	 * 2. VR compatible
+	 *
+	 * var effect = new OutlineEffect( renderer );
+	 * var renderingOutline = false;
+	 *
+	 * scene.onAfterRender = function () {
+	 *
+	 * 	if ( renderingOutline ) return;
+	 *
+	 * 	renderingOutline = true;
+	 *
+	 * 	effect.renderOutline( scene, camera );
+	 *
+	 * 	renderingOutline = false;
+	 *
+	 * };
+	 *
+	 * function render() {
+	 *
+	 * 	renderer.render( scene, camera );
+	 *
+	 * }
+	 *
+	 * // How to set default outline parameters
+	 * new OutlineEffect( renderer, {
+	 * 	defaultThickness: 0.01,
+	 * 	defaultColor: [ 0, 0, 0 ],
+	 * 	defaultAlpha: 0.8,
+	 * 	defaultKeepAlive: true // keeps outline material in cache even if material is removed from scene
+	 * } );
+	 *
+	 * // How to set outline parameters for each material
+	 * material.userData.outlineParameters = {
+	 * 	thickness: 0.01,
+	 * 	color: [ 0, 0, 0 ]
+	 * 	alpha: 0.8,
+	 * 	visible: true,
+	 * 	keepAlive: true
+	 * };
+	 *
+	 * TODO
+	 *  - support shader material without objectNormal in its vertexShader
+	 */
 
-	this.enabled = true;
+	var OutlineEffect = function ( renderer, parameters ) {
 
-	var defaultThickness = parameters.defaultThickness !== undefined ? parameters.defaultThickness : 0.003;
-	var defaultColor = new THREE.Color().fromArray( parameters.defaultColor !== undefined ? parameters.defaultColor : [ 0, 0, 0 ] );
-	var defaultAlpha = parameters.defaultAlpha !== undefined ? parameters.defaultAlpha : 1.0;
-	var defaultKeepAlive = parameters.defaultKeepAlive !== undefined ? parameters.defaultKeepAlive : false;
+		parameters = parameters || {};
 
-	// object.material.uuid -> outlineMaterial or
-	// object.material[ n ].uuid -> outlineMaterial
-	// save at the outline material creation and release
-	// if it's unused removeThresholdCount frames
-	// unless keepAlive is true.
-	var cache = {};
+		this.enabled = true;
 
-	var removeThresholdCount = 60;
+		var defaultThickness = parameters.defaultThickness !== undefined ? parameters.defaultThickness : 0.003;
+		var defaultColor = new THREE.Color().fromArray( parameters.defaultColor !== undefined ? parameters.defaultColor : [ 0, 0, 0 ] );
+		var defaultAlpha = parameters.defaultAlpha !== undefined ? parameters.defaultAlpha : 1.0;
+		var defaultKeepAlive = parameters.defaultKeepAlive !== undefined ? parameters.defaultKeepAlive : false;
 
-	// outlineMaterial.uuid -> object.material or
-	// outlineMaterial.uuid -> object.material[ n ]
-	// save before render and release after render.
-	var originalMaterials = {};
+		// object.material.uuid -> outlineMaterial or
+		// object.material[ n ].uuid -> outlineMaterial
+		// save at the outline material creation and release
+		// if it's unused removeThresholdCount frames
+		// unless keepAlive is true.
+		var cache = {};
 
-	// object.uuid -> originalOnBeforeRender
-	// save before render and release after render.
-	var originalOnBeforeRenders = {};
+		var removeThresholdCount = 60;
 
-	//this.cache = cache;  // for debug
+		// outlineMaterial.uuid -> object.material or
+		// outlineMaterial.uuid -> object.material[ n ]
+		// save before render and release after render.
+		var originalMaterials = {};
 
-	// copied from WebGLPrograms and removed some materials
-	var shaderIDs = {
-		MeshBasicMaterial: 'basic',
-		MeshLambertMaterial: 'lambert',
-		MeshPhongMaterial: 'phong',
-		MeshToonMaterial: 'phong',
-		MeshStandardMaterial: 'physical',
-		MeshPhysicalMaterial: 'physical'
-	};
+		// object.uuid -> originalOnBeforeRender
+		// save before render and release after render.
+		var originalOnBeforeRenders = {};
 
-	var uniformsChunk = {
-		outlineThickness: { value: defaultThickness },
-		outlineColor: { value: defaultColor },
-		outlineAlpha: { value: defaultAlpha }
-	};
+		//this.cache = cache;  // for debug
 
-	var vertexShaderChunk = [
+		// copied from WebGLPrograms and removed some materials
+		var shaderIDs = {
+			MeshBasicMaterial: 'basic',
+			MeshLambertMaterial: 'lambert',
+			MeshPhongMaterial: 'phong',
+			MeshToonMaterial: 'phong',
+			MeshStandardMaterial: 'physical',
+			MeshPhysicalMaterial: 'physical'
+		};
 
-		"uniform float outlineThickness;",
+		var uniformsChunk = {
+			outlineThickness: { value: defaultThickness },
+			outlineColor: { value: defaultColor },
+			outlineAlpha: { value: defaultAlpha }
+		};
 
-		"vec4 calculateOutline( vec4 pos, vec3 objectNormal, vec4 skinned ) {",
+		var vertexShaderChunk = [
 
-		"	float thickness = outlineThickness;",
-		"	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
-		"	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
-		// NOTE: subtract pos2 from pos because BackSide objectNormal is negative
-		"	vec4 norm = normalize( pos - pos2 );",
-		"	return pos + norm * thickness * pos.w * ratio;",
+			"uniform float outlineThickness;",
 
-		"}"
+			"vec4 calculateOutline( vec4 pos, vec3 objectNormal, vec4 skinned ) {",
 
-	].join( "\n" );
+			"	float thickness = outlineThickness;",
+			"	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
+			"	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
+			// NOTE: subtract pos2 from pos because BackSide objectNormal is negative
+			"	vec4 norm = normalize( pos - pos2 );",
+			"	return pos + norm * thickness * pos.w * ratio;",
 
-	var vertexShaderChunk2 = [
+			"}"
 
-		"#if ! defined( LAMBERT ) && ! defined( PHONG ) && ! defined( TOON ) && ! defined( STANDARD )",
-		"	#ifndef USE_ENVMAP",
-		"		vec3 objectNormal = normalize( normal );",
-		"	#endif",
-		"#endif",
+		].join( "\n" );
 
-		"#ifdef FLIP_SIDED",
-		"	objectNormal = -objectNormal;",
-		"#endif",
+		var vertexShaderChunk2 = [
 
-		"#ifdef DECLARE_TRANSFORMED",
-		"	vec3 transformed = vec3( position );",
-		"#endif",
+			"#if ! defined( LAMBERT ) && ! defined( PHONG ) && ! defined( TOON ) && ! defined( STANDARD )",
+			"	#ifndef USE_ENVMAP",
+			"		vec3 objectNormal = normalize( normal );",
+			"	#endif",
+			"#endif",
 
-		"gl_Position = calculateOutline( gl_Position, objectNormal, vec4( transformed, 1.0 ) );",
+			"#ifdef FLIP_SIDED",
+			"	objectNormal = -objectNormal;",
+			"#endif",
 
-		"#include <fog_vertex>"
+			"#ifdef DECLARE_TRANSFORMED",
+			"	vec3 transformed = vec3( position );",
+			"#endif",
 
-	].join( "\n" );
+			"gl_Position = calculateOutline( gl_Position, objectNormal, vec4( transformed, 1.0 ) );",
 
-	var fragmentShader = [
+			"#include <fog_vertex>"
 
-		"#include <common>",
-		"#include <fog_pars_fragment>",
+		].join( "\n" );
 
-		"uniform vec3 outlineColor;",
-		"uniform float outlineAlpha;",
+		var fragmentShader = [
 
-		"void main() {",
+			"#include <common>",
+			"#include <fog_pars_fragment>",
 
-		"	gl_FragColor = vec4( outlineColor, outlineAlpha );",
+			"uniform vec3 outlineColor;",
+			"uniform float outlineAlpha;",
 
-		"	#include <fog_fragment>",
+			"void main() {",
 
-		"}"
+			"	gl_FragColor = vec4( outlineColor, outlineAlpha );",
 
-	].join( "\n" );
+			"	#include <fog_fragment>",
 
-	function createInvisibleMaterial() {
+			"}"
 
-		return new THREE.ShaderMaterial( { name: 'invisible', visible: false } );
+		].join( "\n" );
 
-	}
+		function createInvisibleMaterial() {
 
-	function createMaterial( originalMaterial ) {
+			return new THREE.ShaderMaterial( { name: 'invisible', visible: false } );
 
-		var shaderID = shaderIDs[ originalMaterial.type ];
-		var originalUniforms, originalVertexShader;
+		}
 
-		if ( shaderID !== undefined ) {
+		function createMaterial( originalMaterial ) {
 
-			var shader = THREE.ShaderLib[ shaderID ];
-			originalUniforms = shader.uniforms;
-			originalVertexShader = shader.vertexShader;
+			var shaderID = shaderIDs[ originalMaterial.type ];
+			var originalUniforms, originalVertexShader;
 
-		} else if ( originalMaterial.isRawShaderMaterial === true ) {
+			if ( shaderID !== undefined ) {
 
-			originalUniforms = originalMaterial.uniforms;
-			originalVertexShader = originalMaterial.vertexShader;
+				var shader = THREE.ShaderLib[ shaderID ];
+				originalUniforms = shader.uniforms;
+				originalVertexShader = shader.vertexShader;
 
-			if ( ! /attribute\s+vec3\s+position\s*;/.test( originalVertexShader ) ||
-			     ! /attribute\s+vec3\s+normal\s*;/.test( originalVertexShader ) ) {
+			} else if ( originalMaterial.isRawShaderMaterial === true ) {
 
-				console.warn( 'THREE.OutlineEffect requires both vec3 position and normal attributes in vertex shader, ' +
-				              'does not draw outline for ' + originalMaterial.name + '(uuid:' + originalMaterial.uuid + ') material.' );
+				originalUniforms = originalMaterial.uniforms;
+				originalVertexShader = originalMaterial.vertexShader;
+
+				if ( ! /attribute\s+vec3\s+position\s*;/.test( originalVertexShader ) ||
+				     ! /attribute\s+vec3\s+normal\s*;/.test( originalVertexShader ) ) {
+
+					console.warn( 'THREE.OutlineEffect requires both vec3 position and normal attributes in vertex shader, ' +
+					              'does not draw outline for ' + originalMaterial.name + '(uuid:' + originalMaterial.uuid + ') material.' );
+
+					return createInvisibleMaterial();
+
+				}
+
+			} else if ( originalMaterial.isShaderMaterial === true ) {
+
+				originalUniforms = originalMaterial.uniforms;
+				originalVertexShader = originalMaterial.vertexShader;
+
+			} else {
 
 				return createInvisibleMaterial();
 
 			}
 
-		} else if ( originalMaterial.isShaderMaterial === true ) {
+			var uniforms = Object.assign( {}, originalUniforms, uniformsChunk );
 
-			originalUniforms = originalMaterial.uniforms;
-			originalVertexShader = originalMaterial.vertexShader;
+			var vertexShader = originalVertexShader
+				// put vertexShaderChunk right before "void main() {...}"
+				.replace( /void\s+main\s*\(\s*\)/, vertexShaderChunk + '\nvoid main()' )
+				// put vertexShaderChunk2 the end of "void main() {...}"
+				// Note: here assums originalVertexShader ends with "}" of "void main() {...}"
+				.replace( /\}\s*$/, vertexShaderChunk2 + '\n}' )
+				// remove any light related lines
+				// Note: here is very sensitive to originalVertexShader
+				// TODO: consider safer way
+				.replace( /#include\s+<[\w_]*light[\w_]*>/g, '' );
 
-		} else {
+			var defines = {};
 
-			return createInvisibleMaterial();
+			if ( ! /vec3\s+transformed\s*=/.test( originalVertexShader ) &&
+			     ! /#include\s+<begin_vertex>/.test( originalVertexShader ) ) defines.DECLARE_TRANSFORMED = true;
 
-		}
-
-		var uniforms = Object.assign( {}, originalUniforms, uniformsChunk );
-
-		var vertexShader = originalVertexShader
-			// put vertexShaderChunk right before "void main() {...}"
-			.replace( /void\s+main\s*\(\s*\)/, vertexShaderChunk + '\nvoid main()' )
-			// put vertexShaderChunk2 the end of "void main() {...}"
-			// Note: here assums originalVertexShader ends with "}" of "void main() {...}"
-			.replace( /\}\s*$/, vertexShaderChunk2 + '\n}' )
-			// remove any light related lines
-			// Note: here is very sensitive to originalVertexShader
-			// TODO: consider safer way
-			.replace( /#include\s+<[\w_]*light[\w_]*>/g, '' );
-
-		var defines = {};
-
-		if ( ! /vec3\s+transformed\s*=/.test( originalVertexShader ) &&
-		     ! /#include\s+<begin_vertex>/.test( originalVertexShader ) ) defines.DECLARE_TRANSFORMED = true;
-
-		return new THREE.ShaderMaterial( {
-			defines: defines,
-			uniforms: uniforms,
-			vertexShader: vertexShader,
-			fragmentShader: fragmentShader,
-			side: THREE.BackSide,
-			//wireframe: true,
-			skinning: false,
-			morphTargets: false,
-			morphNormals: false,
-			fog: false
-		} );
-
-	}
-
-	function getOutlineMaterialFromCache( originalMaterial ) {
-
-		var data = cache[ originalMaterial.uuid ];
-
-		if ( data === undefined ) {
-
-			data = {
-				material: createMaterial( originalMaterial ),
-				used: true,
-				keepAlive: defaultKeepAlive,
-				count: 0
-			};
-
-			cache[ originalMaterial.uuid ] = data;
+			return new THREE.ShaderMaterial( {
+				defines: defines,
+				uniforms: uniforms,
+				vertexShader: vertexShader,
+				fragmentShader: fragmentShader,
+				side: THREE.BackSide,
+				//wireframe: true,
+				skinning: false,
+				morphTargets: false,
+				morphNormals: false,
+				fog: false
+			} );
 
 		}
 
-		data.used = true;
+		function getOutlineMaterialFromCache( originalMaterial ) {
 
-		return data.material;
+			var data = cache[ originalMaterial.uuid ];
 
-	}
+			if ( data === undefined ) {
 
-	function getOutlineMaterial( originalMaterial ) {
+				data = {
+					material: createMaterial( originalMaterial ),
+					used: true,
+					keepAlive: defaultKeepAlive,
+					count: 0
+				};
 
-		var outlineMaterial = getOutlineMaterialFromCache( originalMaterial );
-
-		originalMaterials[ outlineMaterial.uuid ] = originalMaterial;
-
-		updateOutlineMaterial( outlineMaterial, originalMaterial );
-
-		return outlineMaterial;
-
-	}
-
-	function setOutlineMaterial( object ) {
-
-		if ( object.material === undefined ) return;
-
-		if ( Array.isArray( object.material ) ) {
-
-			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
-
-				object.material[ i ] = getOutlineMaterial( object.material[ i ] );
+				cache[ originalMaterial.uuid ] = data;
 
 			}
 
-		} else {
+			data.used = true;
 
-			object.material = getOutlineMaterial( object.material );
-
-		}
-
-		originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
-		object.onBeforeRender = onBeforeRender;
-
-	}
-
-	function restoreOriginalMaterial( object ) {
-
-		if ( object.material === undefined ) return;
-
-		if ( Array.isArray( object.material ) ) {
-
-			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
-
-				object.material[ i ] = originalMaterials[ object.material[ i ].uuid ];
-
-			}
-
-		} else {
-
-			object.material = originalMaterials[ object.material.uuid ];
+			return data.material;
 
 		}
 
-		object.onBeforeRender = originalOnBeforeRenders[ object.uuid ];
+		function getOutlineMaterial( originalMaterial ) {
 
-	}
+			var outlineMaterial = getOutlineMaterialFromCache( originalMaterial );
 
-	function onBeforeRender( renderer, scene, camera, geometry, material ) {
+			originalMaterials[ outlineMaterial.uuid ] = originalMaterial;
 
-		var originalMaterial = originalMaterials[ material.uuid ];
+			updateOutlineMaterial( outlineMaterial, originalMaterial );
 
-		// just in case
-		if ( originalMaterial === undefined ) return;
-
-		updateUniforms( material, originalMaterial );
-
-	}
-
-	function updateUniforms( material, originalMaterial ) {
-
-		var outlineParameters = originalMaterial.userData.outlineParameters;
-
-		material.uniforms.outlineAlpha.value = originalMaterial.opacity;
-
-		if ( outlineParameters !== undefined ) {
-
-			if ( outlineParameters.thickness !== undefined ) material.uniforms.outlineThickness.value = outlineParameters.thickness;
-			if ( outlineParameters.color !== undefined ) material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
-			if ( outlineParameters.alpha !== undefined ) material.uniforms.outlineAlpha.value = outlineParameters.alpha;
+			return outlineMaterial;
 
 		}
 
-	}
+		function setOutlineMaterial( object ) {
 
-	function updateOutlineMaterial( material, originalMaterial ) {
+			if ( object.material === undefined ) return;
 
-		if ( material.name === 'invisible' ) return;
+			if ( Array.isArray( object.material ) ) {
 
-		var outlineParameters = originalMaterial.userData.outlineParameters;
+				for ( var i = 0, il = object.material.length; i < il; i ++ ) {
 
-		material.skinning = originalMaterial.skinning;
-		material.morphTargets = originalMaterial.morphTargets;
-		material.morphNormals = originalMaterial.morphNormals;
-		material.fog = originalMaterial.fog;
-
-		if ( outlineParameters !== undefined ) {
-
-			if ( originalMaterial.visible === false ) {
-
-				material.visible = false;
-
-			} else {
-
-				material.visible = ( outlineParameters.visible !== undefined ) ? outlineParameters.visible : true;
-
-			}
-
-			material.transparent = ( outlineParameters.alpha !== undefined && outlineParameters.alpha < 1.0 ) ? true : originalMaterial.transparent;
-
-			if ( outlineParameters.keepAlive !== undefined ) cache[ originalMaterial.uuid ].keepAlive = outlineParameters.keepAlive;
-
-		} else {
-
-			material.transparent = originalMaterial.transparent;
-			material.visible = originalMaterial.visible;
-
-		}
-
-		if ( originalMaterial.wireframe === true || originalMaterial.depthTest === false ) material.visible = false;
-
-	}
-
-	function cleanupCache() {
-
-		var keys;
-
-		// clear originialMaterials
-		keys = Object.keys( originalMaterials );
-
-		for ( var i = 0, il = keys.length; i < il; i ++ ) {
-
-			originalMaterials[ keys[ i ] ] = undefined;
-
-		}
-
-		// clear originalOnBeforeRenders
-		keys = Object.keys( originalOnBeforeRenders );
-
-		for ( var i = 0, il = keys.length; i < il; i ++ ) {
-
-			originalOnBeforeRenders[ keys[ i ] ] = undefined;
-
-		}
-
-		// remove unused outlineMaterial from cache
-		keys = Object.keys( cache );
-
-		for ( var i = 0, il = keys.length; i < il; i ++ ) {
-
-			var key = keys[ i ];
-
-			if ( cache[ key ].used === false ) {
-
-				cache[ key ].count ++;
-
-				if ( cache[ key ].keepAlive === false && cache[ key ].count > removeThresholdCount ) {
-
-					delete cache[ key ];
+					object.material[ i ] = getOutlineMaterial( object.material[ i ] );
 
 				}
 
 			} else {
 
-				cache[ key ].used = false;
-				cache[ key ].count = 0;
+				object.material = getOutlineMaterial( object.material );
+
+			}
+
+			originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
+			object.onBeforeRender = onBeforeRender;
+
+		}
+
+		function restoreOriginalMaterial( object ) {
+
+			if ( object.material === undefined ) return;
+
+			if ( Array.isArray( object.material ) ) {
+
+				for ( var i = 0, il = object.material.length; i < il; i ++ ) {
+
+					object.material[ i ] = originalMaterials[ object.material[ i ].uuid ];
+
+				}
+
+			} else {
+
+				object.material = originalMaterials[ object.material.uuid ];
+
+			}
+
+			object.onBeforeRender = originalOnBeforeRenders[ object.uuid ];
+
+		}
+
+		function onBeforeRender( renderer, scene, camera, geometry, material ) {
+
+			var originalMaterial = originalMaterials[ material.uuid ];
+
+			// just in case
+			if ( originalMaterial === undefined ) return;
+
+			updateUniforms( material, originalMaterial );
+
+		}
+
+		function updateUniforms( material, originalMaterial ) {
+
+			var outlineParameters = originalMaterial.userData.outlineParameters;
+
+			material.uniforms.outlineAlpha.value = originalMaterial.opacity;
+
+			if ( outlineParameters !== undefined ) {
+
+				if ( outlineParameters.thickness !== undefined ) material.uniforms.outlineThickness.value = outlineParameters.thickness;
+				if ( outlineParameters.color !== undefined ) material.uniforms.outlineColor.value.fromArray( outlineParameters.color );
+				if ( outlineParameters.alpha !== undefined ) material.uniforms.outlineAlpha.value = outlineParameters.alpha;
 
 			}
 
 		}
 
-	}
+		function updateOutlineMaterial( material, originalMaterial ) {
 
-	this.render = function ( scene, camera ) {
+			if ( material.name === 'invisible' ) return;
 
-		var renderTarget;
-		var forceClear = false;
+			var outlineParameters = originalMaterial.userData.outlineParameters;
 
-		if ( arguments[ 2 ] !== undefined ) {
+			material.skinning = originalMaterial.skinning;
+			material.morphTargets = originalMaterial.morphTargets;
+			material.morphNormals = originalMaterial.morphNormals;
+			material.fog = originalMaterial.fog;
 
-			console.warn( 'THREE.OutlineEffect.render(): the renderTarget argument has been removed. Use .setRenderTarget() instead.' );
-			renderTarget = arguments[ 2 ];
+			if ( outlineParameters !== undefined ) {
+
+				if ( originalMaterial.visible === false ) {
+
+					material.visible = false;
+
+				} else {
+
+					material.visible = ( outlineParameters.visible !== undefined ) ? outlineParameters.visible : true;
+
+				}
+
+				material.transparent = ( outlineParameters.alpha !== undefined && outlineParameters.alpha < 1.0 ) ? true : originalMaterial.transparent;
+
+				if ( outlineParameters.keepAlive !== undefined ) cache[ originalMaterial.uuid ].keepAlive = outlineParameters.keepAlive;
+
+			} else {
+
+				material.transparent = originalMaterial.transparent;
+				material.visible = originalMaterial.visible;
+
+			}
+
+			if ( originalMaterial.wireframe === true || originalMaterial.depthTest === false ) material.visible = false;
 
 		}
 
-		if ( arguments[ 3 ] !== undefined ) {
+		function cleanupCache() {
 
-			console.warn( 'THREE.OutlineEffect.render(): the forceClear argument has been removed. Use .clear() instead.' );
-			forceClear = arguments[ 3 ];
+			var keys;
+
+			// clear originialMaterials
+			keys = Object.keys( originalMaterials );
+
+			for ( var i = 0, il = keys.length; i < il; i ++ ) {
+
+				originalMaterials[ keys[ i ] ] = undefined;
+
+			}
+
+			// clear originalOnBeforeRenders
+			keys = Object.keys( originalOnBeforeRenders );
+
+			for ( var i = 0, il = keys.length; i < il; i ++ ) {
+
+				originalOnBeforeRenders[ keys[ i ] ] = undefined;
+
+			}
+
+			// remove unused outlineMaterial from cache
+			keys = Object.keys( cache );
+
+			for ( var i = 0, il = keys.length; i < il; i ++ ) {
+
+				var key = keys[ i ];
+
+				if ( cache[ key ].used === false ) {
+
+					cache[ key ].count ++;
+
+					if ( cache[ key ].keepAlive === false && cache[ key ].count > removeThresholdCount ) {
+
+						delete cache[ key ];
+
+					}
+
+				} else {
+
+					cache[ key ].used = false;
+					cache[ key ].count = 0;
+
+				}
+
+			}
 
 		}
 
-		if ( renderTarget !== undefined ) renderer.setRenderTarget( renderTarget );
+		this.render = function ( scene, camera ) {
 
-		if ( forceClear ) renderer.clear();
+			var renderTarget;
+			var forceClear = false;
 
-		if ( this.enabled === false ) {
+			if ( arguments[ 2 ] !== undefined ) {
+
+				console.warn( 'THREE.OutlineEffect.render(): the renderTarget argument has been removed. Use .setRenderTarget() instead.' );
+				renderTarget = arguments[ 2 ];
+
+			}
+
+			if ( arguments[ 3 ] !== undefined ) {
+
+				console.warn( 'THREE.OutlineEffect.render(): the forceClear argument has been removed. Use .clear() instead.' );
+				forceClear = arguments[ 3 ];
+
+			}
+
+			if ( renderTarget !== undefined ) renderer.setRenderTarget( renderTarget );
+
+			if ( forceClear ) renderer.clear();
+
+			if ( this.enabled === false ) {
+
+				renderer.render( scene, camera );
+				return;
+
+			}
+
+			var currentAutoClear = renderer.autoClear;
+			renderer.autoClear = this.autoClear;
 
 			renderer.render( scene, camera );
-			return;
 
-		}
+			renderer.autoClear = currentAutoClear;
 
-		var currentAutoClear = renderer.autoClear;
-		renderer.autoClear = this.autoClear;
+			this.renderOutline( scene, camera );
 
-		renderer.render( scene, camera );
+		};
 
-		renderer.autoClear = currentAutoClear;
+		this.renderOutline = function ( scene, camera ) {
 
-		this.renderOutline( scene, camera );
+			var currentAutoClear = renderer.autoClear;
+			var currentSceneAutoUpdate = scene.autoUpdate;
+			var currentSceneBackground = scene.background;
+			var currentShadowMapEnabled = renderer.shadowMap.enabled;
 
-	};
+			scene.autoUpdate = false;
+			scene.background = null;
+			renderer.autoClear = false;
+			renderer.shadowMap.enabled = false;
 
-	this.renderOutline = function ( scene, camera ) {
+			scene.traverse( setOutlineMaterial );
 
-		var currentAutoClear = renderer.autoClear;
-		var currentSceneAutoUpdate = scene.autoUpdate;
-		var currentSceneBackground = scene.background;
-		var currentShadowMapEnabled = renderer.shadowMap.enabled;
+			renderer.render( scene, camera );
 
-		scene.autoUpdate = false;
-		scene.background = null;
-		renderer.autoClear = false;
-		renderer.shadowMap.enabled = false;
+			scene.traverse( restoreOriginalMaterial );
 
-		scene.traverse( setOutlineMaterial );
+			cleanupCache();
 
-		renderer.render( scene, camera );
+			scene.autoUpdate = currentSceneAutoUpdate;
+			scene.background = currentSceneBackground;
+			renderer.autoClear = currentAutoClear;
+			renderer.shadowMap.enabled = currentShadowMapEnabled;
 
-		scene.traverse( restoreOriginalMaterial );
+		};
 
-		cleanupCache();
+		/*
+		 * See #9918
+		 *
+		 * The following property copies and wrapper methods enable
+		 * OutlineEffect to be called from other *Effect, like
+		 *
+		 * effect = new StereoEffect( new OutlineEffect( renderer ) );
+		 *
+		 * function render () {
+		 *
+	 	 * 	effect.render( scene, camera );
+		 *
+		 * }
+		 */
+		this.autoClear = renderer.autoClear;
+		this.domElement = renderer.domElement;
+		this.shadowMap = renderer.shadowMap;
 
-		scene.autoUpdate = currentSceneAutoUpdate;
-		scene.background = currentSceneBackground;
-		renderer.autoClear = currentAutoClear;
-		renderer.shadowMap.enabled = currentShadowMapEnabled;
+		this.clear = function ( color, depth, stencil ) {
 
-	};
+			renderer.clear( color, depth, stencil );
 
-	/*
-	 * See #9918
-	 *
-	 * The following property copies and wrapper methods enable
-	 * THREE.OutlineEffect to be called from other *Effect, like
-	 *
-	 * effect = new THREE.StereoEffect( new THREE.OutlineEffect( renderer ) );
-	 *
-	 * function render () {
-	 *
- 	 * 	effect.render( scene, camera );
-	 *
-	 * }
-	 */
-	this.autoClear = renderer.autoClear;
-	this.domElement = renderer.domElement;
-	this.shadowMap = renderer.shadowMap;
+		};
 
-	this.clear = function ( color, depth, stencil ) {
+		this.getPixelRatio = function () {
 
-		renderer.clear( color, depth, stencil );
+			return renderer.getPixelRatio();
 
-	};
+		};
 
-	this.getPixelRatio = function () {
+		this.setPixelRatio = function ( value ) {
 
-		return renderer.getPixelRatio();
+			renderer.setPixelRatio( value );
 
-	};
+		};
 
-	this.setPixelRatio = function ( value ) {
+		this.getSize = function ( target ) {
 
-		renderer.setPixelRatio( value );
+			return renderer.getSize( target );
 
-	};
+		};
 
-	this.getSize = function ( target ) {
+		this.setSize = function ( width, height, updateStyle ) {
 
-		return renderer.getSize( target );
+			renderer.setSize( width, height, updateStyle );
 
-	};
+		};
 
-	this.setSize = function ( width, height, updateStyle ) {
+		this.setViewport = function ( x, y, width, height ) {
 
-		renderer.setSize( width, height, updateStyle );
+			renderer.setViewport( x, y, width, height );
 
-	};
+		};
 
-	this.setViewport = function ( x, y, width, height ) {
+		this.setScissor = function ( x, y, width, height ) {
 
-		renderer.setViewport( x, y, width, height );
+			renderer.setScissor( x, y, width, height );
 
-	};
+		};
 
-	this.setScissor = function ( x, y, width, height ) {
+		this.setScissorTest = function ( boolean ) {
 
-		renderer.setScissor( x, y, width, height );
+			renderer.setScissorTest( boolean );
 
-	};
+		};
 
-	this.setScissorTest = function ( boolean ) {
+		this.setRenderTarget = function ( renderTarget ) {
 
-		renderer.setScissorTest( boolean );
+			renderer.setRenderTarget( renderTarget );
 
-	};
-
-	this.setRenderTarget = function ( renderTarget ) {
-
-		renderer.setRenderTarget( renderTarget );
+		};
 
 	};
 
-};
+	exports.OutlineEffect = OutlineEffect;
+
+}));

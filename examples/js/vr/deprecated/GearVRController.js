@@ -1,132 +1,146 @@
 /**
- * @author servinlp
+ * Generated from 'examples/jsm/vr/deprecated/GearVRController.js'
  */
 
-THREE.GearVRController = function () {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	THREE.Object3D.call( this );
+	/**
+	 * @author servinlp
+	 */
 
-	var scope = this;
-	var gamepad;
+	var GearVRController = function () {
 
-	var axes = [ 0, 0 ];
-	var touchpadIsPressed = false;
-	var triggerIsPressed = false;
-	var angularVelocity = new THREE.Vector3();
+		THREE.Object3D.call( this );
 
-	this.matrixAutoUpdate = true;
+		var scope = this;
+		var gamepad;
 
-	function findGamepad() {
+		var axes = [ 0, 0 ];
+		var touchpadIsPressed = false;
+		var triggerIsPressed = false;
+		var angularVelocity = new THREE.Vector3();
 
-		var gamepads = navigator.getGamepads && navigator.getGamepads();
+		this.matrixAutoUpdate = true;
 
-		for ( var i = 0; i < 4; i ++ ) {
+		function findGamepad() {
 
-			var gamepad = gamepads[ i ];
+			var gamepads = navigator.getGamepads && navigator.getGamepads();
 
-			if ( gamepad && ( gamepad.id === 'Gear VR Controller' || gamepad.id === 'Oculus Go Controller' ) ) {
+			for ( var i = 0; i < 4; i ++ ) {
 
-				return gamepad;
+				var gamepad = gamepads[ i ];
+
+				if ( gamepad && ( gamepad.id === 'Gear VR Controller' || gamepad.id === 'Oculus Go Controller' ) ) {
+
+					return gamepad;
+
+				}
 
 			}
 
 		}
 
-	}
+		this.getGamepad = function () {
 
-	this.getGamepad = function () {
+			return gamepad;
 
-		return gamepad;
+		};
 
-	};
+		this.getTouchpadState = function () {
 
-	this.getTouchpadState = function () {
+			return touchpadIsPressed;
 
-		return touchpadIsPressed;
+		};
 
-	};
+		this.update = function () {
 
-	this.update = function () {
+			gamepad = findGamepad();
 
-		gamepad = findGamepad();
+			if ( gamepad !== undefined && gamepad.pose !== undefined ) {
 
-		if ( gamepad !== undefined && gamepad.pose !== undefined ) {
+				var pose = gamepad.pose;
 
-			var pose = gamepad.pose;
+				if ( pose === null ) return; // no user action yet
 
-			if ( pose === null ) return; // no user action yet
+				//  orientation
 
-			//  orientation
+				if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
 
-			if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
+				scope.updateMatrix();
+				scope.visible = true;
 
-			scope.updateMatrix();
-			scope.visible = true;
+				// angular velocity
 
-			// angular velocity
+				if ( pose.angularVelocity !== null && ! angularVelocity.equals( pose.angularVelocity ) ) {
 
-			if ( pose.angularVelocity !== null && ! angularVelocity.equals( pose.angularVelocity ) ) {
+					angularVelocity.fromArray( pose.angularVelocity );
+					scope.dispatchEvent( { type: 'angularvelocitychanged', angularVelocity: angularVelocity } );
 
-				angularVelocity.fromArray( pose.angularVelocity );
-				scope.dispatchEvent( { type: 'angularvelocitychanged', angularVelocity: angularVelocity } );
+				}
+
+				// axes (touchpad)
+
+				if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+
+					axes[ 0 ] = gamepad.axes[ 0 ];
+					axes[ 1 ] = gamepad.axes[ 1 ];
+					scope.dispatchEvent( { type: 'axischanged', axes: axes } );
+
+				}
+
+				// button (touchpad)
+
+				if ( touchpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
+
+					touchpadIsPressed = gamepad.buttons[ 0 ].pressed;
+					scope.dispatchEvent( { type: touchpadIsPressed ? 'touchpaddown' : 'touchpadup', axes: axes } );
+
+				}
+
+
+				// trigger
+
+				if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
+
+					triggerIsPressed = gamepad.buttons[ 1 ].pressed;
+					scope.dispatchEvent( { type: triggerIsPressed ? 'triggerdown' : 'triggerup' } );
+
+				}
+
+				// app button not available, reserved for use by the browser
+
+			} else {
+
+				scope.visible = false;
 
 			}
 
-			// axes (touchpad)
+		};
 
-			if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+		// DEPRECATED
 
-				axes[ 0 ] = gamepad.axes[ 0 ];
-				axes[ 1 ] = gamepad.axes[ 1 ];
-				scope.dispatchEvent( { type: 'axischanged', axes: axes } );
+		this.getTouchPadState = function () {
 
-			}
+			console.warn( 'THREE.GearVRController: getTouchPadState() is now getTouchpadState()' );
+			return touchpadIsPressed;
 
-			// button (touchpad)
+		};
 
-			if ( touchpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
+		this.setHand = function () {
 
-				touchpadIsPressed = gamepad.buttons[ 0 ].pressed;
-				scope.dispatchEvent( { type: touchpadIsPressed ? 'touchpaddown' : 'touchpadup', axes: axes } );
+			console.warn( 'THREE.GearVRController: setHand() has been removed.' );
 
-			}
-
-
-			// trigger
-
-			if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
-
-				triggerIsPressed = gamepad.buttons[ 1 ].pressed;
-				scope.dispatchEvent( { type: triggerIsPressed ? 'triggerdown' : 'triggerup' } );
-
-			}
-
-			// app button not available, reserved for use by the browser
-
-		} else {
-
-			scope.visible = false;
-
-		}
+		};
 
 	};
 
-	// DEPRECATED
+	GearVRController.prototype = Object.create( THREE.Object3D.prototype );
+	GearVRController.prototype.constructor = GearVRController;
 
-	this.getTouchPadState = function () {
+	exports.GearVRController = GearVRController;
 
-		console.warn( 'THREE.GearVRController: getTouchPadState() is now getTouchpadState()' );
-		return touchpadIsPressed;
-
-	};
-
-	this.setHand = function () {
-
-		console.warn( 'THREE.GearVRController: setHand() has been removed.' );
-
-	};
-
-};
-
-THREE.GearVRController.prototype = Object.create( THREE.Object3D.prototype );
-THREE.GearVRController.prototype.constructor = THREE.GearVRController;
+}));

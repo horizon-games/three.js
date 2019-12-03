@@ -1,118 +1,132 @@
 /**
- * @author Mugen87 / https://github.com/Mugen87
+ * Generated from 'examples/jsm/vr/deprecated/DaydreamController.js'
  */
 
-THREE.DaydreamController = function () {
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('three')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'three'], factory) :
+	(global = global || self, factory(global.THREE = global.THREE || {}, global.THREE));
+}(this, function (exports, THREE) { 'use strict';
 
-	THREE.Object3D.call( this );
+	/**
+	 * @author Mugen87 / https://github.com/Mugen87
+	 */
 
-	var scope = this;
-	var gamepad;
+	var DaydreamController = function () {
 
-	var axes = [ 0, 0 ];
-	var touchpadIsPressed = false;
-	var angularVelocity = new THREE.Vector3();
+		THREE.Object3D.call( this );
 
-	this.matrixAutoUpdate = false;
+		var scope = this;
+		var gamepad;
 
-	function findGamepad() {
+		var axes = [ 0, 0 ];
+		var touchpadIsPressed = false;
+		var angularVelocity = new THREE.Vector3();
 
-		// iterate across gamepads as the Daydream Controller may not be
-		// in position 0
+		this.matrixAutoUpdate = false;
 
-		var gamepads = navigator.getGamepads && navigator.getGamepads();
+		function findGamepad() {
 
-		for ( var i = 0; i < 4; i ++ ) {
+			// iterate across gamepads as the Daydream Controller may not be
+			// in position 0
 
-			var gamepad = gamepads[ i ];
+			var gamepads = navigator.getGamepads && navigator.getGamepads();
 
-			if ( gamepad && ( gamepad.id === 'Daydream Controller' ) ) {
+			for ( var i = 0; i < 4; i ++ ) {
 
-				return gamepad;
+				var gamepad = gamepads[ i ];
+
+				if ( gamepad && ( gamepad.id === 'Daydream Controller' ) ) {
+
+					return gamepad;
+
+				}
 
 			}
 
 		}
 
-	}
+		this.getGamepad = function () {
 
-	this.getGamepad = function () {
+			return gamepad;
 
-		return gamepad;
+		};
 
-	};
+		this.getTouchpadState = function () {
 
-	this.getTouchpadState = function () {
+			return touchpadIsPressed;
 
-		return touchpadIsPressed;
+		};
 
-	};
+		this.update = function () {
 
-	this.update = function () {
+			gamepad = findGamepad();
 
-		gamepad = findGamepad();
+			if ( gamepad !== undefined && gamepad.pose !== undefined ) {
 
-		if ( gamepad !== undefined && gamepad.pose !== undefined ) {
+				var pose = gamepad.pose;
 
-			var pose = gamepad.pose;
+				if ( pose === null ) return; // no user action yet
 
-			if ( pose === null ) return; // no user action yet
+				//  orientation
 
-			//  orientation
+				if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
 
-			if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
+				scope.updateMatrix();
+				scope.visible = true;
 
-			scope.updateMatrix();
-			scope.visible = true;
+				// angular velocity
 
-			// angular velocity
+				if ( pose.angularVelocity !== null && ! angularVelocity.equals( pose.angularVelocity ) ) {
 
-			if ( pose.angularVelocity !== null && ! angularVelocity.equals( pose.angularVelocity ) ) {
+					angularVelocity.fromArray( pose.angularVelocity );
+					scope.dispatchEvent( { type: 'angularvelocitychanged', angularVelocity: angularVelocity } );
 
-				angularVelocity.fromArray( pose.angularVelocity );
-				scope.dispatchEvent( { type: 'angularvelocitychanged', angularVelocity: angularVelocity } );
+				}
+
+				// axes (touchpad)
+
+				if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+
+					axes[ 0 ] = gamepad.axes[ 0 ];
+					axes[ 1 ] = gamepad.axes[ 1 ];
+					scope.dispatchEvent( { type: 'axischanged', axes: axes } );
+
+				}
+
+				// button (touchpad)
+
+				if ( touchpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
+
+					touchpadIsPressed = gamepad.buttons[ 0 ].pressed;
+					scope.dispatchEvent( { type: touchpadIsPressed ? 'touchpaddown' : 'touchpadup' } );
+
+				}
+
+				// app button not available, reserved for use by the browser
+
+			} else {
+
+				scope.visible = false;
 
 			}
 
-			// axes (touchpad)
+		};
 
-			if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+		// DEPRECATED
 
-				axes[ 0 ] = gamepad.axes[ 0 ];
-				axes[ 1 ] = gamepad.axes[ 1 ];
-				scope.dispatchEvent( { type: 'axischanged', axes: axes } );
+		this.getTouchPadState = function () {
 
-			}
+			console.warn( 'THREE.DaydreamController: getTouchPadState() is now getTouchpadState()' );
+			return touchpadIsPressed;
 
-			// button (touchpad)
-
-			if ( touchpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
-
-				touchpadIsPressed = gamepad.buttons[ 0 ].pressed;
-				scope.dispatchEvent( { type: touchpadIsPressed ? 'touchpaddown' : 'touchpadup' } );
-
-			}
-
-			// app button not available, reserved for use by the browser
-
-		} else {
-
-			scope.visible = false;
-
-		}
+		};
 
 	};
 
-	// DEPRECATED
+	DaydreamController.prototype = Object.create( THREE.Object3D.prototype );
+	DaydreamController.prototype.constructor = DaydreamController;
 
-	this.getTouchPadState = function () {
+	exports.DaydreamController = DaydreamController;
 
-		console.warn( 'THREE.DaydreamController: getTouchPadState() is now getTouchpadState()' );
-		return touchpadIsPressed;
-
-	};
-
-};
-
-THREE.DaydreamController.prototype = Object.create( THREE.Object3D.prototype );
-THREE.DaydreamController.prototype.constructor = THREE.DaydreamController;
+}));
