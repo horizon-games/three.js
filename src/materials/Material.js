@@ -76,6 +76,10 @@ function Material() {
 
 	this.version = 0;
 
+	this.needsModelNormalMatrix = false;
+
+	this.needsInverseModelMatrix = false;
+
 }
 
 Material.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {

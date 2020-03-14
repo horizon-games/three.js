@@ -1472,6 +1472,18 @@ function WebGLRenderer( parameters ) {
 		object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
 		object.normalMatrix.getNormalMatrix( object.modelViewMatrix );
 
+		if(material.needsModelNormalMatrix) {
+
+			object.modelNormalMatrix.getNormalMatrix( object.matrixWorld );
+
+		}
+
+		if(material.needsInverseModelMatrix) {
+
+			object.inverseModelMatrix.getInverse( object.matrixWorld );
+
+		}
+
 		if ( object.isImmediateRenderObject ) {
 
 			var program = setProgram( camera, scene, material, object );
@@ -2018,7 +2030,19 @@ function WebGLRenderer( parameters ) {
 
 		}
 
+		if ( material.needsModelNormalMatrix ) {
+
+			p_uniforms.setValue( _gl, 'modelNormalMatrix', object.modelNormalMatrix );
+
+		}
+
 		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
+
+		if ( material.needsInverseModelMatrix ) {
+
+			p_uniforms.setValue( _gl, 'inverseModelMatrix', object.inverseModelMatrix );
+
+		}
 
 		return program;
 

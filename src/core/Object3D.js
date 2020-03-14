@@ -93,6 +93,12 @@ function Object3D() {
 		},
 		normalMatrix: {
 			value: new Matrix3()
+		},
+		modelNormalMatrix: {
+			value: new Matrix3()
+		},
+		inverseModelMatrix: {
+			value: new Matrix4()
 		}
 	} );
 

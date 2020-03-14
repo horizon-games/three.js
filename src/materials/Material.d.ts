@@ -58,6 +58,8 @@ export interface MaterialParameters {
 	stencilFail?: StencilOp;
 	stencilZFail?: StencilOp;
 	stencilZPass?: StencilOp;
+	needsModelNormalMatrix?: boolean;
+	needsInverseModelMatrix?: boolean;
 }
 
 /**
@@ -310,6 +312,16 @@ export class Material extends EventDispatcher {
 	 * This starts at 0 and counts how many times .needsUpdate is set to true.
 	 */
 	version: number;
+
+	/**
+	 * Defines whether material uses Mesh's modelNormalMatrix, necessary for some world-space light/reflection effects.
+	 */
+	needsModelNormalMatrix: boolean;
+
+	/**
+	 * Defines whether material uses Mesh's inverseModelMatrix, necessary for some world-space light/refraction effects.
+	 */
+	needsInverseModelMatrix: boolean;
 
 	/**
 	 * Return a new material with the same parameters as this material.

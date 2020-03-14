@@ -80,6 +80,10 @@ export class Object3D extends EventDispatcher {
 
 	readonly normalMatrix: Matrix3;
 
+	readonly modelNormalMatrix: Matrix3;
+
+	readonly inverseModelMatrix: Matrix4;
+
 	/**
 	 * Local transform.
 	 */

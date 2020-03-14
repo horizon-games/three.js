@@ -5296,6 +5296,12 @@
 			},
 			normalMatrix: {
 				value: new Matrix3()
+			},
+			modelNormalMatrix: {
+				value: new Matrix3()
+			},
+			inverseModelMatrix: {
+				value: new Matrix4()
 			}
 		} );
 
@@ -8649,6 +8655,10 @@
 		this.userData = {};
 
 		this.version = 0;
+
+		this.needsModelNormalMatrix = false;
+
+		this.needsInverseModelMatrix = false;
 
 	}
 
@@ -24944,6 +24954,18 @@
 			object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
 			object.normalMatrix.getNormalMatrix( object.modelViewMatrix );
 
+			if(material.needsModelNormalMatrix) {
+
+				object.modelNormalMatrix.getNormalMatrix( object.matrixWorld );
+
+			}
+
+			if(material.needsInverseModelMatrix) {
+
+				object.inverseModelMatrix.getInverse( object.matrixWorld );
+
+			}
+
 			if ( object.isImmediateRenderObject ) {
 
 				var program = setProgram( camera, scene, material, object );
@@ -25490,7 +25512,19 @@
 
 			}
 
+			if ( material.needsModelNormalMatrix ) {
+
+				p_uniforms.setValue( _gl, 'modelNormalMatrix', object.modelNormalMatrix );
+
+			}
+
 			p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
+
+			if ( material.needsInverseModelMatrix ) {
+
+				p_uniforms.setValue( _gl, 'inverseModelMatrix', object.inverseModelMatrix );
+
+			}
 
 			return program;
 
