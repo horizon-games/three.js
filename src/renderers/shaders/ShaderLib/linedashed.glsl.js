@@ -11,6 +11,7 @@ varying float vLineDistance;
 #include <morphtarget_pars_vertex>
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
+#include <dithered_clipping_hole_pars_vertex>
 
 void main() {
 
@@ -25,6 +26,7 @@ void main() {
 	#include <project_vertex>
 	#include <logdepthbuf_vertex>
 	#include <clipping_planes_vertex>
+  #include <dithered_clipping_hole_vertex>
 	#include <fog_vertex>
 
 }
@@ -46,11 +48,13 @@ varying float vLineDistance;
 #include <fog_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
+#include <dithered_clipping_hole_pars_fragment>
 
 void main() {
 
 	vec4 diffuseColor = vec4( diffuse, opacity );
 	#include <clipping_planes_fragment>
+  #include <dithered_clipping_hole_fragment>
 
 	if ( mod( vLineDistance, totalSize ) > dashSize ) {
 

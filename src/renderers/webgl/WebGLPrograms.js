@@ -334,6 +334,7 @@ function WebGLPrograms( renderer, cubemaps, cubeuvmaps, extensions, capabilities
 			numClipIntersection: clipping.numIntersection,
 
 			dithering: material.dithering,
+			ditheredHole: material.ditheredHole,
 
 			shadowMapEnabled: renderer.shadowMap.enabled && shadows.length > 0,
 			shadowMapType: renderer.shadowMap.type,
@@ -563,6 +564,8 @@ function WebGLPrograms( renderer, cubemaps, cubeuvmaps, extensions, capabilities
 			_programLayers.enable( 20 );
 		if ( parameters.alphaToCoverage )
 			_programLayers.enable( 21 );
+		if ( parameters.ditheredHole )
+			_programLayers.enable( 22 );
 
 		array.push( _programLayers.mask );
 

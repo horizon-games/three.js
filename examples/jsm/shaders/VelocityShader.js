@@ -99,6 +99,7 @@ uniform float opacity;
 #include <alphatest_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
+#include <dithered_clipping_hole_pars_fragment>
 
 varying vec4 clipPositionCurrent;
 varying vec4 clipPositionPrevious;

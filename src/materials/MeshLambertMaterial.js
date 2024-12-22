@@ -1,6 +1,7 @@
 import { MultiplyOperation, TangentSpaceNormalMap } from '../constants.js';
 import { Material } from './Material.js';
 import { Vector2 } from '../math/Vector2.js';
+import { Vector4 } from '../math/Vector4.js';
 import { Color } from '../math/Color.js';
 import { Euler } from '../math/Euler.js';
 
@@ -58,6 +59,8 @@ class MeshLambertMaterial extends Material {
 
 		this.fog = true;
 
+		this.ditheredHole = new Vector4( 0, 0, 0, 0 );
+
 		this.setValues( parameters );
 
 	}
@@ -109,6 +112,8 @@ class MeshLambertMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

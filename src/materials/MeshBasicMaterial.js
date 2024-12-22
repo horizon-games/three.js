@@ -74,6 +74,8 @@ class MeshBasicMaterial extends Material {
 		this.wireframeLinejoin = source.wireframeLinejoin;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

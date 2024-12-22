@@ -80,6 +80,8 @@ class Material extends EventDispatcher {
 
 		this._alphaTest = 0;
 
+		this.ditheredHole = null;
+
 	}
 
 	get alphaTest() {

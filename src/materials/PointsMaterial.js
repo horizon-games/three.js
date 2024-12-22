@@ -40,6 +40,8 @@ class PointsMaterial extends Material {
 		this.sizeAttenuation = source.sizeAttenuation;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

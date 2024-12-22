@@ -127,6 +127,12 @@ function WebGLMaterials( renderer, properties ) {
 
 		}
 
+		if ( material.ditheredHole ) {
+
+			uniforms.ditheredHole.value.copy( material.ditheredHole );
+
+		}
+
 		if ( material.emissive ) {
 
 			uniforms.emissive.value.copy( material.emissive ).multiplyScalar( material.emissiveIntensity );

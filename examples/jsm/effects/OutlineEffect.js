@@ -153,6 +153,7 @@ class OutlineEffect {
 			'#include <fog_pars_fragment>',
 			'#include <logdepthbuf_pars_fragment>',
 			'#include <clipping_planes_pars_fragment>',
+      '#include <dithered_clipping_hole_pars_fragment>',
 
 			'uniform vec3 outlineColor;',
 			'uniform float outlineAlpha;',
@@ -160,6 +161,7 @@ class OutlineEffect {
 			'void main() {',
 
 			'	#include <clipping_planes_fragment>',
+			' #include <dithered_clipping_hole_fragment>',
 			'	#include <logdepthbuf_fragment>',
 
 			'	gl_FragColor = vec4( outlineColor, outlineAlpha );',

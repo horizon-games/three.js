@@ -39,6 +39,7 @@ class Scene extends Object3D {
 		if ( source.background !== null ) this.background = source.background.clone();
 		if ( source.environment !== null ) this.environment = source.environment.clone();
 		if ( source.fog !== null ) this.fog = source.fog.clone();
+		if ( source.ditheredHole !== null ) this.ditheredHole = source.ditheredHole.clone();
 
 		this.backgroundBlurriness = source.backgroundBlurriness;
 		this.backgroundIntensity = source.backgroundIntensity;

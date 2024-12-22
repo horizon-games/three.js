@@ -17,6 +17,10 @@ import clipping_planes_fragment from './ShaderChunk/clipping_planes_fragment.gls
 import clipping_planes_pars_fragment from './ShaderChunk/clipping_planes_pars_fragment.glsl.js';
 import clipping_planes_pars_vertex from './ShaderChunk/clipping_planes_pars_vertex.glsl.js';
 import clipping_planes_vertex from './ShaderChunk/clipping_planes_vertex.glsl.js';
+import dithered_clipping_hole_fragment from './ShaderChunk/dithered_clipping_hole_fragment.glsl.js';
+import dithered_clipping_hole_pars_fragment from './ShaderChunk/dithered_clipping_hole_pars_fragment.glsl.js';
+import dithered_clipping_hole_vertex from './ShaderChunk/dithered_clipping_hole_vertex.glsl.js';
+import dithered_clipping_hole_pars_vertex from './ShaderChunk/dithered_clipping_hole_pars_vertex.glsl.js';
 import color_fragment from './ShaderChunk/color_fragment.glsl.js';
 import color_pars_fragment from './ShaderChunk/color_pars_fragment.glsl.js';
 import color_pars_vertex from './ShaderChunk/color_pars_vertex.glsl.js';
@@ -144,6 +148,10 @@ export const ShaderChunk = {
 	clipping_planes_pars_fragment: clipping_planes_pars_fragment,
 	clipping_planes_pars_vertex: clipping_planes_pars_vertex,
 	clipping_planes_vertex: clipping_planes_vertex,
+	dithered_clipping_hole_pars_fragment: dithered_clipping_hole_pars_fragment,
+	dithered_clipping_hole_fragment: dithered_clipping_hole_fragment,
+	dithered_clipping_hole_pars_vertex: dithered_clipping_hole_pars_vertex,
+	dithered_clipping_hole_vertex: dithered_clipping_hole_vertex,
 	color_fragment: color_fragment,
 	color_pars_fragment: color_pars_fragment,
 	color_pars_vertex: color_pars_vertex,

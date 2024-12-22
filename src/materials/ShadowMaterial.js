@@ -27,6 +27,8 @@ class ShadowMaterial extends Material {
 		this.color.copy( source.color );
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

@@ -279,6 +279,7 @@ ShaderLib[ 'line' ] = {
 		#include <fog_pars_fragment>
 		#include <logdepthbuf_pars_fragment>
 		#include <clipping_planes_pars_fragment>
+    #include <dithered_clipping_hole_pars_fragment>
 
 		vec2 closestLineToLine(vec3 p1, vec3 p2, vec3 p3, vec3 p4) {
 
@@ -312,6 +313,7 @@ ShaderLib[ 'line' ] = {
 		void main() {
 
 			#include <clipping_planes_fragment>
+      #include <dithered_clipping_hole_fragment>
 
 			#ifdef USE_DASH
 

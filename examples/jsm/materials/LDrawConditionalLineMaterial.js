@@ -87,11 +87,13 @@ class LDrawConditionalLineMaterial extends ShaderMaterial {
 			#include <fog_pars_fragment>
 			#include <logdepthbuf_pars_fragment>
 			#include <clipping_planes_pars_fragment>
+      #include <dithered_clipping_hole_pars_fragment>
 			void main() {
 
 				if ( discardFlag > 0.5 ) discard;
 
 				#include <clipping_planes_fragment>
+        #include <dithered_clipping_hole_fragment>
 				vec3 outgoingLight = vec3( 0.0 );
 				vec4 diffuseColor = vec4( diffuse, opacity );
 				#include <logdepthbuf_fragment>

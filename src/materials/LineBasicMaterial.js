@@ -39,6 +39,8 @@ class LineBasicMaterial extends Material {
 		this.linejoin = source.linejoin;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

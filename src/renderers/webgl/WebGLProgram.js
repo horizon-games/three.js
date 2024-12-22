@@ -831,6 +831,9 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 
 			parameters.dithering ? '#define DITHERING' : '',
 			parameters.opaque ? '#define OPAQUE' : '',
+			parameters.ditheredHole ? '#define USE_DITHERED_HOLE' : '',
+			// '#define USE_DITHERED_HOLE',
+
 
 			ShaderChunk[ 'colorspace_pars_fragment' ], // this code is required here because it is used by the various encoding/decoding function defined below
 			getTexelEncodingFunction( 'linearToOutputTexel', parameters.outputColorSpace ),
@@ -865,7 +868,8 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 			customVertexExtensions,
 			'#define attribute in',
 			'#define varying out',
-			'#define texture2D texture'
+			'#define texture2D texture',
+			parameters.ditheredHole ? '#define USE_DITHERED_HOLE' : '',
 		].join( '\n' ) + '\n' + prefixVertex;
 
 		prefixFragment = [

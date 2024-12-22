@@ -76,6 +76,8 @@ class ShaderMaterial extends Material {
 		this.fog = source.fog;
 		this.lights = source.lights;
 		this.clipping = source.clipping;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		this.extensions = Object.assign( {}, source.extensions );
 

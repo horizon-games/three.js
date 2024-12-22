@@ -71,6 +71,8 @@ class MeshMatcapMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

@@ -7,6 +7,7 @@ export const vertex = /* glsl */`
 #include <skinning_pars_vertex>
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
+#include <dithered_clipping_hole_pars_vertex>
 
 // This is used for computing an equivalent of gl_FragCoord.z that is as high precision as possible.
 // Some platforms compute gl_FragCoord at a lower precision which makes the manually computed value better for
@@ -37,6 +38,7 @@ void main() {
 	#include <project_vertex>
 	#include <logdepthbuf_vertex>
 	#include <clipping_planes_vertex>
+	#include <dithered_clipping_hole_vertex>
 
 	vHighPrecisionZW = gl_Position.zw;
 
@@ -59,6 +61,7 @@ export const fragment = /* glsl */`
 #include <alphahash_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
+#include <dithered_clipping_hole_pars_fragment>
 
 varying vec2 vHighPrecisionZW;
 
@@ -66,6 +69,7 @@ void main() {
 
 	vec4 diffuseColor = vec4( 1.0 );
 	#include <clipping_planes_fragment>
+  #include <dithered_clipping_hole_fragment>
 
 	#if DEPTH_PACKING == 3200
 

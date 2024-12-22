@@ -15,6 +15,7 @@ varying vec3 vViewPosition;
 
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
+#include <dithered_clipping_hole_pars_vertex>
 
 void main() {
 
@@ -40,6 +41,7 @@ void main() {
 	#include <logdepthbuf_vertex>
 	#include <clipping_planes_vertex>
 	#include <fog_vertex>
+  #include <dithered_clipping_hole_vertex>
 
 	vViewPosition = - mvPosition.xyz;
 
@@ -69,11 +71,13 @@ varying vec3 vViewPosition;
 #include <normalmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
+#include <dithered_clipping_hole_pars_fragment>
 
 void main() {
 
 	vec4 diffuseColor = vec4( diffuse, opacity );
 	#include <clipping_planes_fragment>
+  #include <dithered_clipping_hole_fragment>
 
 	#include <logdepthbuf_fragment>
 	#include <map_fragment>

@@ -9280,6 +9280,8 @@ class Material extends EventDispatcher {
 
 		this._alphaTest = 0;
 
+		this.ditheredHole = null;
+
 	}
 
 	get alphaTest() {
@@ -9799,6 +9801,8 @@ class MeshBasicMaterial extends Material {
 		this.wireframeLinejoin = source.wireframeLinejoin;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -12446,6 +12450,8 @@ class ShaderMaterial extends Material {
 		this.fog = source.fog;
 		this.lights = source.lights;
 		this.clipping = source.clipping;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		this.extensions = Object.assign( {}, source.extensions );
 
@@ -13316,6 +13322,7 @@ class Scene extends Object3D {
 		if ( source.background !== null ) this.background = source.background.clone();
 		if ( source.environment !== null ) this.environment = source.environment.clone();
 		if ( source.fog !== null ) this.fog = source.fog.clone();
+		if ( source.ditheredHole !== null ) this.ditheredHole = source.ditheredHole.clone();
 
 		this.backgroundBlurriness = source.backgroundBlurriness;
 		this.backgroundIntensity = source.backgroundIntensity;
@@ -16906,6 +16913,8 @@ class LineBasicMaterial extends Material {
 		this.linejoin = source.linejoin;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -17252,6 +17261,8 @@ class PointsMaterial extends Material {
 		this.sizeAttenuation = source.sizeAttenuation;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -23763,6 +23774,8 @@ class ShadowMaterial extends Material {
 		this.color.copy( source.color );
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -23842,6 +23855,9 @@ class MeshStandardMaterial extends Material {
 
 		this.fog = true;
 
+		this.ditheredHole = null;
+		//new Vector4( 100, 0, 0, 0 );
+
 		this.setValues( parameters );
 
 	}
@@ -23897,6 +23913,8 @@ class MeshStandardMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -24199,6 +24217,8 @@ class MeshPhongMaterial extends Material {
 
 		this.fog = true;
 
+		this.ditheredHole = new Vector4( 0, 0, 0, 0 );
+
 		this.setValues( parameters );
 
 	}
@@ -24252,6 +24272,8 @@ class MeshPhongMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -24306,6 +24328,8 @@ class MeshToonMaterial extends Material {
 
 		this.fog = true;
 
+		this.ditheredHole = new Vector4( 0, 0, 0, 0 );
+
 		this.setValues( parameters );
 
 	}
@@ -24348,6 +24372,8 @@ class MeshToonMaterial extends Material {
 		this.wireframeLinejoin = source.wireframeLinejoin;
 
 		this.fog = source.fog;
+
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -24465,6 +24491,8 @@ class MeshLambertMaterial extends Material {
 
 		this.fog = true;
 
+		this.ditheredHole = new Vector4( 0, 0, 0, 0 );
+
 		this.setValues( parameters );
 
 	}
@@ -24516,6 +24544,8 @@ class MeshLambertMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 
@@ -24681,6 +24711,8 @@ class MeshMatcapMaterial extends Material {
 		this.flatShading = source.flatShading;
 
 		this.fog = source.fog;
+		
+		this.ditheredHole = source.ditheredHole;
 
 		return this;
 

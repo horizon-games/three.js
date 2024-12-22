@@ -1,5 +1,6 @@
 import { Color } from '../../math/Color.js';
 import { Vector2 } from '../../math/Vector2.js';
+import { Vector4 } from '../../math/Vector4.js';
 import { Matrix3 } from '../../math/Matrix3.js';
 
 /**
@@ -19,7 +20,9 @@ const UniformsLib = {
 		alphaMap: { value: null },
 		alphaMapTransform: { value: /*@__PURE__*/ new Matrix3() },
 
-		alphaTest: { value: 0 }
+		alphaTest: { value: 0 },
+		
+		ditheredHole: { value: /*@__PURE__*/ new Vector4(0, 0, 0, 0) },
 
 	},
 

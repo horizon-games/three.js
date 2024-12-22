@@ -10,6 +10,7 @@ varying vec3 vWorldPosition;
 #include <morphtarget_pars_vertex>
 #include <skinning_pars_vertex>
 #include <clipping_planes_pars_vertex>
+#include <dithered_clipping_hole_pars_fragment>
 
 void main() {
 
@@ -35,6 +36,7 @@ void main() {
 	#include <project_vertex>
 	#include <worldpos_vertex>
 	#include <clipping_planes_vertex>
+  #include <dithered_clipping_hole_vertex>
 
 	vWorldPosition = worldPosition.xyz;
 
@@ -57,11 +59,13 @@ varying vec3 vWorldPosition;
 #include <alphatest_pars_fragment>
 #include <alphahash_pars_fragment>
 #include <clipping_planes_pars_fragment>
+#include <dithered_clipping_hole_pars_fragment>
 
 void main () {
 
 	vec4 diffuseColor = vec4( 1.0 );
 	#include <clipping_planes_fragment>
+  #include <dithered_clipping_hole_fragment>
 
 	#include <map_fragment>
 	#include <alphamap_fragment>
